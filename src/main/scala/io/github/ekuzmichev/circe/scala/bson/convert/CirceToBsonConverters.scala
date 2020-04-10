@@ -87,7 +87,7 @@ object CirceToBsonConverters {
         )
       override def onString(str: String): Either[List[JsonError], BsonValue] = BsonString(str).asRight
       override def onArray(values: Vector[Json]): Either[List[JsonError], BsonValue] =
-        values.map(jsonToBson).map(_.toValidated).sequence.toEither.map(BsonArray(_))
+        values.map(jsonToBson).map(_.toValidated).sequence.toEither.map(BsonArray.fromIterable(_))
       override def onObject(obj: JsonObject): Either[List[JsonError], BsonValue] =
         obj.toMap
           .mapValues(jsonToBson)
