@@ -42,7 +42,8 @@ lazy val root = (project in file("."))
       libs.circeCore,
       libs.mongoScalaBson,
       libs.circeGeneric % Test,
-      libs.scalaTest % Test
+      libs.circeParser  % Test,
+      libs.scalaTest    % Test
     ),
     releasePublishArtifactsAction := PgpKeys.publishSigned.value
   )
@@ -56,6 +57,7 @@ lazy val libs = new {
   val catsCore       = "org.typelevel"     %% "cats-core"        % catsV
   val circeCore      = "io.circe"          %% "circe-core"       % circeV
   val circeGeneric   = "io.circe"          %% "circe-generic"    % circeV
+  val circeParser    = "io.circe"          %% "circe-parser"     % circeV
   val mongoScalaBson = "org.mongodb.scala" %% "mongo-scala-bson" % mongoScalaBsonV
   val scalaTest      = "org.scalatest"     %% "scalatest"        % scalaTestV
 }

@@ -1,16 +1,16 @@
 package io.github.ekuzmichev.circe.scala.bson.convert
 
 import cats.instances.list._
+import cats.instances.option._
 import cats.instances.vector._
+import cats.syntax.apply._
 import cats.syntax.either._
-import cats.syntax.option._
 import cats.syntax.traverse._
-import io.circe.{Json, JsonNumber, JsonObject}
+import io.circe.{ Json, JsonNumber, JsonObject }
 import org.bson.BsonType
 import org.mongodb.scala.bson._
 
 import scala.collection.JavaConverters._
-import scala.math.BigInt
 
 object CirceToBsonConverters {
   val DateKey: String = "$date"
@@ -65,26 +65,35 @@ object CirceToBsonConverters {
   def jsonToBson(json: Json): Either[List[JsonError], BsonValue] = json.foldWith(jsonFolder)
 
   private[this] lazy val jsonFolder: Json.Folder[Either[List[JsonError], BsonValue]] = {
-    def toBson(bigInt: BigInt): Option[BsonValue] = {
-      import bigInt._
-      if (isValidInt) BsonNumber(intValue).some
-      else if (isValidLong) BsonNumber(longValue).some
-      else if (isValidDouble) BsonNumber(doubleValue).some
-      else none
-    }
     new Json.Folder[Either[List[JsonError], BsonValue]] {
-      self =>
       override def onNull: Either[List[JsonError], BsonValue]                   = BsonNull().asRight
       override def onBoolean(bool: Boolean): Either[List[JsonError], BsonValue] = BsonBoolean(bool).asRight
-      override def onNumber(value: JsonNumber): Either[List[JsonError], BsonValue] =
+      override def onNumber(value: JsonNumber): Either[List[JsonError], BsonValue] = {
+        import value._
+
+        def isDouble: Option[Boolean] = toBigDecimal.map(_.scale > 0)
+        def intOrDouble(int: Int, double: Boolean): BsonNumber =
+          if (double) BsonDouble(toDouble) else BsonInt32(int)
+        def longOrDouble(long: Long, double: Boolean): BsonNumber =
+          if (double) BsonDouble(toDouble) else BsonInt64(long)
+        def fromBigDecimal(bd: BigDecimal): BsonNumber =
+          if (bd.scale <= 0) {
+            if (bd.isValidInt) BsonInt32(bd.toInt)
+            else if (bd.isValidLong) BsonInt64(bd.toLong)
+            else BsonDouble(bd.doubleValue())
+          } else {
+            if (bd.isDecimalDouble) BsonDouble(bd.doubleValue())
+            else BsonDecimal128(bd)
+          }
+
         Either.fromOption(
-          value.toLong
-            .map(BsonNumber(_))
-            .orElse(value.toInt.map(BsonNumber(_)))
-            .orElse(value.toBigInt.flatMap(toBson))
-            .orElse(value.toBigDecimal.map(BsonDecimal128(_))),
+          None
+            .orElse((toInt, isDouble).mapN(intOrDouble))
+            .orElse((toLong, isDouble).mapN(longOrDouble))
+            .orElse(toBigDecimal.map(fromBigDecimal)),
           List(JsonNumberError(value))
         )
+      }
       override def onString(str: String): Either[List[JsonError], BsonValue] = BsonString(str).asRight
       override def onArray(values: Vector[Json]): Either[List[JsonError], BsonValue] =
         values.map(jsonToBson).map(_.toValidated).sequence.toEither.map(BsonArray.fromIterable(_))
