@@ -77,9 +77,9 @@ object CirceToBsonConverters {
           if (bd.scale <= 0) {
             if (bd.isValidInt) BsonInt32(bd.toInt)
             else if (bd.isValidLong) BsonInt64(bd.toLong)
-            else BsonDouble(bd.doubleValue())
+            else BsonDouble(bd.doubleValue)
           } else {
-            if (bd.isDecimalDouble) BsonDouble(bd.doubleValue())
+            if (bd.isDecimalDouble) BsonDouble(bd.doubleValue)
             else BsonDecimal128(bd)
           }
 

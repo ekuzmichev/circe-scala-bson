@@ -31,9 +31,16 @@ ThisBuild / publishTo := {
 ThisBuild / publishMavenStyle := true
 
 ThisBuild / scalaVersion := "2.12.8"
-ThisBuild / crossScalaVersions := Seq("2.12.8", "2.13.0")
-ThisBuild / scalacOptions ++= Seq("-Xfatal-warnings", "-Ypartial-unification", "-unchecked", "-deprecation")
+ThisBuild / crossScalaVersions := Seq("2.12.8", "2.13.1")
+ThisBuild / scalacOptions ++= scalacOptionsVersion(scalaVersion.value)
 ThisBuild / releaseCrossBuild := true
+
+val crossScalaOptions = Seq("-unchecked", "-deprecation")
+def scalacOptionsVersion(scalaVersion: String) =
+  CrossVersion.partialVersion(scalaVersion) match {
+    case Some((2, 13)) => crossScalaOptions
+    case _             => crossScalaOptions :+ "-Ypartial-unification"
+  }
 
 lazy val root = (project in file("."))
   .settings(
