@@ -7,16 +7,16 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class ConvertTest extends AnyFlatSpec with Matchers with Inside {
-  it should "convert and parse JSON-supported objects to Mongo's BSON" in {
-    case class Sample(string: String, double: Double, seq: Seq[String], inner: Inner)
-    case class Inner(inner: String)
+  it should "convert and parse circe-JSON-supported types to BSON and back to JSON" in {
+    case class Sample(int: Int, double: Double, stringSeq: Seq[String], inner: Inner)
+    case class Inner(boolean: Boolean)
 
-    val sample = Sample("one", 1, Seq("one", "1"), Inner("inner one"))
+    val sample = Sample(42, 1.1, Seq("one", "two"), Inner(false))
 
     inside(sample.toBson) {
-      case Right(converted) =>
-        inside(converted.fromBson[Sample]) {
-          case Right(parsed) => parsed shouldBe sample
+      case Right(convertedBson) =>
+        inside(convertedBson.fromBson[Sample]) {
+          case Right(parsedSample) => parsedSample shouldBe sample
         }
     }
   }

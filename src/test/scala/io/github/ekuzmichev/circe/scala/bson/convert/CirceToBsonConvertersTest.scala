@@ -8,7 +8,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class CirceToBsonConvertersTest extends AnyFlatSpec with Matchers with Inside {
-  it should "parse numbers to correct Mongo BSON type" in {
+  it should "convert JSON numbers to correct BSON numbers and back to JSON numbers" in {
     val jsonString =
       """
         | {
@@ -42,9 +42,9 @@ class CirceToBsonConvertersTest extends AnyFlatSpec with Matchers with Inside {
     }
   }
 
-  it should "convert and parse circe-JSON objects to Mongo's BSON" in {
+  it should "convert and parse hand-made circe-JSON objects to BSON and back to JSON" in {
     import Json._
-    val json =
+    val jsonObject =
       obj(
         "string"        -> fromString("string value"),
         "bigDecimal"    -> fromBigDecimal(123.456789e11),
@@ -57,21 +57,21 @@ class CirceToBsonConvertersTest extends AnyFlatSpec with Matchers with Inside {
         "array"         -> arr(fromString("s"), fromInt(123)),
         "boolean"       -> fromBoolean(true),
         "null"          -> Null,
-        "nestedObject"  -> obj("field1" -> fromString("value1"), "field2" -> fromInt(45))
+        "nestedObject"  -> obj("key1" -> fromString("string"), "key2" -> fromInt(45))
       )
 
-    assertBackAndForthConversion(json)
+    assertBackAndForthConversion(jsonObject)
   }
 
-  private def assertBackAndForthConversion(json: Json): Unit = {
-    println(s"initial json: $json\n")
-    inside(jsonToBson(json)) {
-      case Right(bson) =>
-        println(s"bson: $bson\n")
-        inside(bsonToJson(bson)) {
-          case Right(actualJson) =>
-            println(s"json after conversion json: $actualJson\n")
-            actualJson shouldBe json
+  private def assertBackAndForthConversion(initialJson: Json): Unit = {
+    println(s"initial json: $initialJson\n")
+    inside(jsonToBson(initialJson)) {
+      case Right(convertedBson) =>
+        println(s"converted bson: $convertedBson\n")
+        inside(bsonToJson(convertedBson)) {
+          case Right(convertedJson) =>
+            println(s"converted json: $convertedJson\n")
+            convertedJson shouldBe initialJson
         }
     }
   }

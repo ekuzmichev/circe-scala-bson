@@ -13,8 +13,6 @@ import org.mongodb.scala.bson._
 import scala.collection.JavaConverters._
 
 object CirceToBsonConverters {
-  val DateKey: String = "$date"
-
   def bsonToJson(bson: BsonValue): Either[List[BsonError], Json] = {
     import BsonType._
     import Json._
@@ -52,7 +50,6 @@ object CirceToBsonConverters {
       case BOOLEAN               => fromBoolean(bson.asBoolean().getValue).asRight
       case NULL                  => Null.asRight
       case UNDEFINED             => Null.asRight
-      case DATE_TIME             => obj(DateKey -> Json.fromLong(bson.asDateTime().getValue)).asRight
       case JAVASCRIPT            => fromString(bson.asJavaScript().getCode).asRight
       case JAVASCRIPT_WITH_SCOPE => fromString(bson.asJavaScriptWithScope().getCode).asRight
       case OBJECT_ID             => fromString(bson.asObjectId().getValue.toHexString).asRight
