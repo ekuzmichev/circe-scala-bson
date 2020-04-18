@@ -3,6 +3,8 @@ package io.github.ekuzmichev.circe.scala.bson.convert
 import io.circe.Json
 import io.circe.parser._
 import io.github.ekuzmichev.circe.scala.bson.convert.CirceToBsonConverters._
+import org.bson.types.Decimal128
+import org.mongodb.scala.bson._
 import org.scalatest.Inside
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -38,7 +40,7 @@ class CirceToBsonConvertersTest extends AnyFlatSpec with Matchers with Inside {
         |""".stripMargin
 
     inside(parse(jsonString)) {
-      case Right(json) => assertBackAndForthConversion(json)
+      case Right(json) => assertJsonToBsonToJsonConversion(json)
     }
   }
 
@@ -60,10 +62,38 @@ class CirceToBsonConvertersTest extends AnyFlatSpec with Matchers with Inside {
         "nestedObject"  -> obj("key1" -> fromString("string"), "key2" -> fromInt(45))
       )
 
-    assertBackAndForthConversion(jsonObject)
+    assertJsonToBsonToJsonConversion(jsonObject)
   }
 
-  private def assertBackAndForthConversion(initialJson: Json): Unit = {
+  it should "convert hand-made BSON objects to JSON and back to BSON" in {
+    val initialBson =
+      BsonDocument(
+        "int"                 -> BsonInt32(42),
+        "double"              -> BsonDouble(1.1),
+        "long"                -> BsonInt64(1000000000000000L),
+        "decimal"             -> BsonDecimal128(Decimal128.parse("1.0E20")),
+        "string"              -> BsonString("string"),
+        "boolean"             -> BsonBoolean(false),
+        "null"                -> new BsonNull(),
+        "undefined"           -> new BsonUndefined(),
+        "javascript"          -> BsonJavaScript("function hello() {}"),
+        "javascriptWithScope" -> BsonJavaScriptWithScope("function hello() {}", BsonDocument()),
+        "objectId"            -> BsonObjectId("507f191e810c19729de860ea"),
+        "symbol"              -> BsonSymbol(Symbol("symbol")),
+        "timestamp"           -> BsonTimestamp(42, 21),
+        "intArray"            -> BsonArray(BsonInt32(21), BsonInt32(42)),
+        "stringArray"         -> BsonArray(BsonString("string1"), BsonString("string2"), BsonString("string3")),
+        "object"              -> BsonDocument("int" -> BsonInt32(42))
+      )
+
+    println(s"initial bson: $initialBson\n")
+    inside(bsonToJson(initialBson)) {
+      case Right(convertedJson) =>
+        assertJsonToBsonToJsonConversion(convertedJson)
+    }
+  }
+
+  private def assertJsonToBsonToJsonConversion(initialJson: Json): Unit = {
     println(s"initial json: $initialJson\n")
     inside(jsonToBson(initialJson)) {
       case Right(convertedBson) =>
