@@ -33,6 +33,7 @@ ThisBuild / publishMavenStyle := true
 ThisBuild / scalaVersion := "2.12.8"
 ThisBuild / crossScalaVersions := Seq("2.12.8", "2.13.0")
 ThisBuild / scalacOptions ++= Seq("-Xfatal-warnings", "-Ypartial-unification", "-unchecked", "-deprecation")
+ThisBuild / releaseCrossBuild := true
 
 lazy val root = (project in file("."))
   .settings(
