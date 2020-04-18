@@ -49,7 +49,7 @@ lazy val root = (project in file("."))
   )
 
 lazy val libs = new {
-  val catsV           = "2.1.1"
+  val catsV           = "2.1.0"
   val circeV          = "0.13.0"
   val mongoScalaBsonV = "4.0.2"
   val scalaTestV      = "3.1.1"
