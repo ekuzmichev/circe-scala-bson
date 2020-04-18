@@ -1,5 +1,7 @@
 package io.github.ekuzmichev.circe.scala.bson.convert
 
+import java.util.Date
+
 import io.circe.Json
 import io.circe.parser._
 import io.github.ekuzmichev.circe.scala.bson.convert.CirceToBsonConverters._
@@ -8,6 +10,7 @@ import org.mongodb.scala.bson._
 import org.scalatest.Inside
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.prop.TableDrivenPropertyChecks
 
 class CirceToBsonConvertersTest extends AnyFlatSpec with Matchers with Inside {
   it should "convert JSON numbers to correct BSON numbers and back to JSON numbers" in {
@@ -90,6 +93,21 @@ class CirceToBsonConvertersTest extends AnyFlatSpec with Matchers with Inside {
     inside(bsonToJson(initialBson)) {
       case Right(convertedJson) =>
         assertJsonToBsonToJsonConversion(convertedJson)
+    }
+  }
+
+  it should "fail to convert unsupported BSON types to JSON" in new TableDrivenPropertyChecks {
+    forAll(Table(
+      "unsupportedBson",
+      BsonDateTime(new Date()),
+      BsonBinary("Hello".getBytes),
+      BsonMaxKey(),
+      BsonMinKey(),
+      BsonRegularExpression("regex")
+    )) { unsupportedBson =>
+      inside(bsonToJson(unsupportedBson)) {
+        case Left(UnsupportedBsonType(_, _):: Nil) => succeed
+      }
     }
   }
 
