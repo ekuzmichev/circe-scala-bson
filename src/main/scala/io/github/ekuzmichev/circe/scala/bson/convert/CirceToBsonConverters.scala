@@ -1,12 +1,10 @@
 package io.github.ekuzmichev.circe.scala.bson.convert
 
 import cats.instances.list._
-import cats.instances.option._
 import cats.instances.vector._
-import cats.syntax.apply._
 import cats.syntax.either._
 import cats.syntax.traverse._
-import io.circe.{ Json, JsonNumber, JsonObject }
+import io.circe.{ Json, JsonNumber, JsonNumberHelper, JsonObject }
 import org.bson.BsonType
 import org.mongodb.scala.bson._
 
@@ -65,32 +63,8 @@ object CirceToBsonConverters {
     new Json.Folder[Either[List[JsonError], BsonValue]] {
       override def onNull: Either[List[JsonError], BsonValue]                   = BsonNull().asRight
       override def onBoolean(bool: Boolean): Either[List[JsonError], BsonValue] = BsonBoolean(bool).asRight
-      override def onNumber(value: JsonNumber): Either[List[JsonError], BsonValue] = {
-        import value._
-
-        def isDouble: Option[Boolean] = toBigDecimal.map(_.scale > 0)
-        def intOrDouble(int: Int, double: Boolean): BsonNumber =
-          if (double) BsonDouble(toDouble) else BsonInt32(int)
-        def longOrDouble(long: Long, double: Boolean): BsonNumber =
-          if (double) BsonDouble(toDouble) else BsonInt64(long)
-        def fromBigDecimal(bd: BigDecimal): BsonNumber =
-          if (bd.scale <= 0) {
-            if (bd.isValidInt) BsonInt32(bd.toInt)
-            else if (bd.isValidLong) BsonInt64(bd.toLong)
-            else BsonDouble(bd.doubleValue)
-          } else {
-            if (bd.isDecimalDouble) BsonDouble(bd.doubleValue)
-            else BsonDecimal128(bd)
-          }
-
-        Either.fromOption(
-          None
-            .orElse((toInt, isDouble).mapN(intOrDouble))
-            .orElse((toLong, isDouble).mapN(longOrDouble))
-            .orElse(toBigDecimal.map(fromBigDecimal)),
-          List(JsonNumberError(value))
-        )
-      }
+      override def onNumber(value: JsonNumber): Either[List[JsonError], BsonValue] =
+        JsonNumberHelper.toBsonNumber(value).leftMap(_ :: Nil)
       override def onString(str: String): Either[List[JsonError], BsonValue] = BsonString(str).asRight
       override def onArray(values: Vector[Json]): Either[List[JsonError], BsonValue] =
         values.map(jsonToBson).map(_.toValidated).sequence.toEither.map(BsonArray.fromIterable(_))
