@@ -6,9 +6,6 @@ script:
   - sbt clean coverage test coverageReport
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-  - gpg2 --keyring=$TRAVIS_BUILD_DIR/pubring.gpg --no-default-keyring --import deployment/signingkey.asc
-  - gpg2 --allow-secret-key-import --keyring=$TRAVIS_BUILD_DIR/secring.gpg --no-default-keyring --import deployment/signingkey.asc
-  - sbt + publishSigned
 env:
   global:
     #PASSPHRASE=
