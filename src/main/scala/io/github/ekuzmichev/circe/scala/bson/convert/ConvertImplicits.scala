@@ -6,7 +6,7 @@ import io.circe.{ Decoder, Encoder }
 import org.mongodb.scala.bson.BsonValue
 import io.github.ekuzmichev.circe.scala.bson.convert.CirceToBsonConverters._
 
-object convert {
+object ConvertImplicits {
   implicit class ToBsonOps[T](val value: T) extends AnyVal {
     def toBson(implicit encoder: Encoder[T]): Either[List[JsonError], BsonValue] = jsonToBson(value.asJson)
   }

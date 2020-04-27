@@ -1,13 +1,13 @@
 package io.github.ekuzmichev.circe.scala.bson.convert
 
 import io.circe.generic.auto._
-import io.github.ekuzmichev.circe.scala.bson.convert.convert._
+import io.github.ekuzmichev.circe.scala.bson.convert.ConvertImplicits._
 import org.mongodb.scala.bson._
 import org.scalatest.Inside
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class ConvertTest extends AnyFlatSpec with Matchers with Inside {
+class ConvertImplicitsTest extends AnyFlatSpec with Matchers with Inside {
 
   case class Sample(int: Int, double: Double, stringSeq: Seq[String], inner: Inner)
 
