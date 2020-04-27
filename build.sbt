@@ -18,7 +18,7 @@ ThisBuild / developers := List(
   )
 )
 
-ThisBuild / description := "Some descripiton about your project."
+ThisBuild / description := "Conversions for circe and Scala bson (Scala wrapper / extension to the bson library)"
 ThisBuild / licenses := List("MIT" -> url("http://opensource.org/licenses/MIT"))
 ThisBuild / homepage := Some(url("https://github.com/ekuzmichev/circe-scala-bson"))
 
