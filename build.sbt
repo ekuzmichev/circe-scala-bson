@@ -30,8 +30,8 @@ ThisBuild / publishTo := {
 }
 ThisBuild / publishMavenStyle := true
 
-ThisBuild / scalaVersion := "2.12.8"
-ThisBuild / crossScalaVersions := Seq("2.12.8", "2.13.1")
+ThisBuild / scalaVersion := "2.12.15"
+ThisBuild / crossScalaVersions := Seq("2.12.15", "2.13.6")
 ThisBuild / scalacOptions ++= scalacOptionsVersion(scalaVersion.value)
 ThisBuild / releaseCrossBuild := true
 
@@ -57,10 +57,10 @@ lazy val root = (project in file("."))
   )
 
 lazy val libs = new {
-  val catsV           = "2.1.0"
-  val circeV          = "0.13.0"
-  val mongoScalaBsonV = "4.0.2"
-  val scalaTestV      = "3.1.1"
+  val catsV           = "2.6.1"
+  val circeV          = "0.14.1"
+  val mongoScalaBsonV = "4.3.3"
+  val scalaTestV      = "3.2.10"
 
   val catsCore       = "org.typelevel"     %% "cats-core"        % catsV
   val circeCore      = "io.circe"          %% "circe-core"       % circeV
